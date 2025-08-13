@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IARE Lab Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #7c3aed;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-weight: 400;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group.horizontal {
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input, select {
+            padding: 0.85rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        input[type="text"] {
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            padding: 0.85rem;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        .current-display {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            background: rgba(79, 70, 229, 0.05);
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .current-display .badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .pdf-container {
+            height: 75vh;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .pdf-container.empty {
+            background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center;
+            background-size: 64px 64px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .semester-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .semester-selector select {
+            padding: 0.85rem 1rem;
+            min-width: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IARE Lab Document Viewer</h1>
+            <p class="subtitle">Access and navigate through laboratory documents with ease</p>
+        </header>
+
+        <div class="card">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="rollNumber"><i class="fas fa-id-card"></i> Roll Number</label>
+                    <input type="text" id="rollNumber" placeholder="Enter roll number (e.g. 22951A05K0)">
+                </div>
+
+                <div class="control-group">
+                    <label for="subjectCode"><i class="fas fa-book"></i> Subject Code</label>
+                    <input type="text" id="subjectCode" value="ACSC34" placeholder="Enter subject code">
+                </div>
+
+                <div class="control-group">
+                    <label><i class="fas fa-flask"></i> Semester</label>
+                    <div class="semester-selector">
+                        <select id="semester">
+                            <option value="SEM1">Semester 1</option>
+                            <option value="SEM2">Semester 2</option>
+                            <option value="SEM3">Semester 3</option>
+                            <option value="SEM4">Semester 4</option>
+                            <option value="SEM5">Semester 5</option>
+                            <option value="SEM6">Semester 6</option>
+                            <option value="SEM7" selected>Semester 7</option>
+                            <option value="SEM8">Semester 8</option>
+                        </select>
+                        <span class="current-display">
+                            <span class="badge">LAB</span>
+                            <span id="labCodeDisplay">LAB/SEM7</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group horizontal">
+                <div class="current-display">
+                    <span class="badge">ROLL</span>
+                    <span id="currentRollDisplay">-</span>
+                </div>
+                <div class="current-display">
+                    <span class="badge">WEEK</span>
+                    <span id="currentWeekDisplay">1</span>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button id="prevRoll" class="btn btn-outline btn-icon">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous Roll
+                </button>
+                <button id="nextRoll" class="btn btn-outline btn-icon">
+                    Next Roll
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button id="prevWeek" class="btn btn-outline btn-icon">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous Week
+                </button>
+                <button id="nextWeek" class="btn btn-outline btn-icon">
+                    Next Week
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button id="loadPdf" class="btn">
+                    <i class="fas fa-file-pdf"></i>
+                    Load Document
+                </button>
+            </div>
+        </div>
+
+        <div class="pdf-container empty" id="pdfContainer">
+            <iframe id="pdfViewer"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const rollNumberInput = document.getElementById('rollNumber');
+            const subjectCodeInput = document.getElementById('subjectCode');
+            const semesterSelect = document.getElementById('semester');
+            const currentRollDisplay = document.getElementById('currentRollDisplay');
+            const currentWeekDisplay = document.getElementById('currentWeekDisplay');
+            const labCodeDisplay = document.getElementById('labCodeDisplay');
+            const prevRollBtn = document.getElementById('prevRoll');
+            const nextRollBtn = document.getElementById('nextRoll');
+            const prevWeekBtn = document.getElementById('prevWeek');
+            const nextWeekBtn = document.getElementById('nextWeek');
+            const loadPdfBtn = document.getElementById('loadPdf');
+            const pdfViewer = document.getElementById('pdfViewer');
+            const pdfContainer = document.getElementById('pdfContainer');
+
+            // Current values
+            let currentRoll = '';
+            let currentWeek = 1;
+            let currentSubject = 'ACSC34';
+            let currentSemester = 'SEM7';
+            let currentLabCode = 'LAB/SEM7';
+
+            // Convert inputs to uppercase
+            subjectCodeInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+            rollNumberInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+
+            // Update lab code when semester changes
+            semesterSelect.addEventListener('change', function() {
+                currentSemester = this.value;
+                currentLabCode = `LAB/${currentSemester}`;
+                labCodeDisplay.textContent = currentLabCode;
+            });
+
+            // Roll number navigation functions
+            function incrementRoll(roll) {
+                if (!roll || roll.length < 2) return roll;
+                
+                // Extract last two characters
+                const prefix = roll.slice(0, -2);
+                const lastTwo = roll.slice(-2);
+                
+                // Check if last two are digits
+                if (/^\d+$/.test(lastTwo)) {
+                    const num = parseInt(lastTwo);
+                    const nextNum = num + 1;
+                    return prefix + nextNum.toString().padStart(2, '0');
+                }
+                // Check if format is letter+digit (A0-Z9)
+                else if (/^[A-Za-z]\d$/.test(lastTwo)) {
+                    const letter = lastTwo[0];
+                    const digit = parseInt(lastTwo[1]);
+                    
+                    if (digit < 9) {
+                        return prefix + letter + (digit + 1);
+                    } else {
+                        // Move to next letter (A→B)
+                        const nextLetter = String.fromCharCode(letter.charCodeAt(0) + 1);
+                        return prefix + nextLetter + '0';
+                    }
+                }
+                
+                // Default case - just return the original
+                return roll;
+            }
+
+            function decrementRoll(roll) {
+                if (!roll || roll.length < 2) return roll;
+                
+                // Extract last two characters
+                const prefix = roll.slice(0, -2);
+                const lastTwo = roll.slice(-2);
+                
+                // Check if last two are digits
+                if (/^\d+$/.test(lastTwo)) {
+                    const num = parseInt(lastTwo);
+                    if (num > 0) {
+                        return prefix + (num - 1).toString().padStart(2, '0');
+                    }
+                }
+                // Check if format is letter+digit (A0-Z9)
+                else if (/^[A-Za-z]\d$/.test(lastTwo)) {
+                    const letter = lastTwo[0];
+                    const digit = parseInt(lastTwo[1]);
+                    
+                    if (digit > 0) {
+                        return prefix + letter + (digit - 1);
+                    } else if (letter > 'A') {
+                        // Move to previous letter (B→A)
+                        const prevLetter = String.fromCharCode(letter.charCodeAt(0) - 1);
+                        return prefix + prevLetter + '9';
+                    }
+                }
+                
+                // Default case - just return the original
+                return roll;
+            }
+
+            // Update displays
+            function updateDisplays() {
+                currentRollDisplay.textContent = currentRoll || '-';
+                currentWeekDisplay.textContent = currentWeek;
+                labCodeDisplay.textContent = currentLabCode;
+            }
+
+            // Load PDF
+            function loadPdf() {
+                currentRoll = rollNumberInput.value.trim().toUpperCase();
+                currentSubject = subjectCodeInput.value.trim().toUpperCase();
+                
+                if (!currentRoll) {
+                    alert('Please enter a roll number first');
+                    return;
+                }
+                
+                const pdfUrl = `https://iare-data.s3.ap-south-1.amazonaws.com/uploads/STUDENTS/${currentRoll}/${currentLabCode}/${currentSubject}/${currentRoll}_week${currentWeek}.pdf`;
+                
+                pdfViewer.src = pdfUrl;
+                pdfContainer.classList.remove('empty');
+                updateDisplays();
+            }
+
+            // Event listeners
+            prevRollBtn.addEventListener('click', function() {
+                if (!rollNumberInput.value) {
+                    alert('Please enter a roll number first');
+                    return;
+                }
+                rollNumberInput.value = decrementRoll(rollNumberInput.value);
+                loadPdf();
+            });
+
+            nextRollBtn.addEventListener('click', function() {
+                if (!rollNumberInput.value) {
+                    alert('Please enter a roll number first');
+                    return;
+                }
+                rollNumberInput.value = incrementRoll(rollNumberInput.value);
+                loadPdf();
+            });
+
+            prevWeekBtn.addEventListener('click', function() {
+                if (currentWeek > 1) {
+                    currentWeek--;
+                    loadPdf();
+                }
+            });
+
+            nextWeekBtn.addEventListener('click', function() {
+                currentWeek++;
+                loadPdf();
+            });
+
+            loadPdfBtn.addEventListener('click', loadPdf);
+
+            // Load on Enter key
+            rollNumberInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') loadPdf();
+            });
+            subjectCodeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') loadPdf();
+            });
+
+            // Initialize
+            updateDisplays();
+        });
+    </script>
+</body>
+</html>
